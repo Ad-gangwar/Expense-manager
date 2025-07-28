@@ -1,8 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes as RoutesList, Route, Navigate } from "react-router-dom";
-import Home from "./pages/Home/index";
+import Home from "./pages/Home";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import Dashboard from "./pages/Dashboard";
 import Navbar from "./components/Navbar";
 
 // Layout with Navbar
@@ -25,12 +26,20 @@ const Router: React.FC = () => {
     <BrowserRouter>
       <RoutesList>
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <AppLayout>
               <PrivateRoute>
-                <Home />
+                <Dashboard />
               </PrivateRoute>
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <AppLayout>
+              <Home />
             </AppLayout>
           }
         />

@@ -48,6 +48,55 @@ router.get("/", passport.authenticate("jwt", { session: false }), async (req, re
 });
 
 
+// GET /categories/summary - get total expenses by category for the user
+router.get("/categories/summary", passport.authenticate("jwt", { session: false }), async (req, res) => {
+    const user = req.user._id;
+    try {
+        const summary = await Expense.aggregate([
+            { $match: { user: user } },
+            { $group: { _id: "$category", amount: { $sum: "$amount" } } },
+            { $project: { _id: 0, category: "$_id", amount: 1 } },
+            { $sort: { amount: -1 } }
+        ]);
+        res.status(200).json({ data: summary });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// GET /monthly/summary - get total expenses by month for the user
+router.get("/monthly/summary", passport.authenticate("jwt", { session: false }), async (req, res) => {
+    const user = req.user._id;
+    try {
+        const summary = await Expense.aggregate([
+            { $match: { user: user } },
+            { $group: {
+                _id: { $dateToString: { format: "%b", date: "$date" } },
+                amount: { $sum: "$amount" }
+            } },
+            { $project: { _id: 0, month: "$_id", amount: 1 } },
+            { $sort: { month: 1 } }
+        ]);
+        res.status(200).json({ data: summary });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// GET /recent - get recent expense transactions for the user
+router.get("/recent", passport.authenticate("jwt", { session: false }), async (req, res) => {
+    const user = req.user._id;
+    try {
+        const recent = await Expense.find({ user: user })
+            .sort({ date: -1 })
+            .limit(10);
+        res.status(200).json({ data: recent });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
 // DELETE /:id - delete expense (mounted at /expense)
 // Requires authentication via JWT
 router.delete("/:id", passport.authenticate("jwt", {session: false}),  async (req, res) =>{
