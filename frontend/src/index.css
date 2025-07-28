@@ -5,3 +5,11 @@
 body {
   margin: 0;
 }
+
+.gradient-text {
+  background: linear-gradient(to right, #818cf8, #3b82f6, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}

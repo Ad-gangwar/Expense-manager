@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import toast from 'react-hot-toast';
-import { useNavigate } from "react-router-dom";
-import HashLoader from 'react-spinners/HashLoader';
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import HashLoader from "react-spinners/HashLoader";
 import Carousel from "../../components/Carousel";
 import { LOGIN_USER } from "../../api/authAPIs";
 
 const LoginPage = () => {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -15,17 +14,15 @@ const LoginPage = () => {
   const slides = [
     'https://github.com/Ad-gangwar/Web-Relay/blob/main/Screenshot_2024-07-27_151555-removebg-preview.png?raw=true',
     'https://github.com/Ad-gangwar/Web-Relay/blob/main/Screenshot_2024-07-27_151618-removebg-preview.png?raw=true'
-  ]
+  ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setLoading(true);
     e.preventDefault();
-    const data = { email, password };
+    setLoading(true);
     try {
-      const response = await LOGIN_USER(data);
+      const response = await LOGIN_USER({ email, password });
       if (response.success) {
-        const token = response.token;
-        localStorage.setItem("expToken", token || "");
+        localStorage.setItem("expToken", response.token || "");
         localStorage.setItem("expUser", JSON.stringify(response.data));
         toast.success("Logged in Successfully!");
         navigate("/");
@@ -41,43 +38,46 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="flex w-[800px] h-[600px] bg-white rounded-xl rounded-bl-[65px] overflow-hidden">
-        <div className="w-2/5 bg-gradient-to-b from-teal-500 to-teal-700 flex items-center justify-center m-3 rounded-xl rounded-bl-[65px] rounded-tr-[65px]">
-          <Carousel autoSlide={true} >
-            {[...slides.map((s) => (
-              <img src={s} alt="Expense-Ease" />
-            ))]}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#1e3a8a]">
+      <div className="flex w-[800px] h-[600px] bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl rounded-bl-[65px] overflow-hidden shadow-2xl">
+        
+        <div className="w-2/5 bg-gradient-to-b from-[#f1f5f9] to-[#e2e8f0] flex items-center justify-center m-3 rounded-xl rounded-bl-[65px] rounded-tr-[65px]">
+          <Carousel autoSlide={true}>
+            {slides.map((s, i) => (
+              <img key={i} src={s} alt="Expense-Ease" />
+            ))}
           </Carousel>
         </div>
 
         <div className="w-3/5 p-6 px-8 mt-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            We are <span className="text-teal-600">ExpenseEase</span>
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Welcome to{" "}
+            <span className="gradient-text">ExpenseEase</span>
           </h2>
-          <p className="text-gray-600 mb-6">
-            <span className="text-2xl">👋</span> Welcome back! Log in to your account.
+          <p className="text-gray-400 mb-6">
+            <span className="text-2xl">👋</span> Log in to continue your journey.
           </p>
           <form onSubmit={handleSubmit}>
             <div className="mb-8">
-              <label className="block text-gray-600 mb-1" htmlFor="email">
+              <label className="block text-gray-300 mb-1" htmlFor="email">
                 Email
               </label>
               <input
-                className="w-full p-3 rounded-lg bg-gray-200 text-gray-900"
+                className="w-full p-3 rounded-lg bg-[#1e293b] text-white placeholder-gray-500 border border-[#334155] focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400"
                 type="email"
-                placeholder="Enter your Email"
                 id="email"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+
             <div className="mb-12">
-              <label className="block text-gray-600 mb-1" htmlFor="password">
+              <label className="block text-gray-300 mb-1" htmlFor="password">
                 Password
               </label>
               <input
-                className="w-full p-3 rounded-lg bg-gray-200 text-gray-900"
+                className="w-full p-3 rounded-lg bg-[#1e293b] text-white placeholder-gray-500 border border-[#334155] focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400"
                 type="password"
                 id="password"
                 placeholder="Enter your password"
@@ -85,14 +85,21 @@ const LoginPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+
             <button
-              className="w-full p-3 rounded-full bg-teal-600 text-white hover:bg-teal-700"
+              className="w-full p-3 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition duration-300 shadow-lg"
               type="submit"
             >
-              {loading ? <HashLoader size={35} color='white' /> : 'Login'}
+              {loading ? <HashLoader size={35} color="white" /> : "Login"}
             </button>
           </form>
-          <div className="text-gray-600 mt-6 text-center">Not signed up? <span className="text-teal-700 font-semibold"><Link to="/signup">Sign Up</Link></span></div>
+
+          <div className="text-gray-400 mt-6 text-center">
+            Not signed up?{" "}
+            <span className="text-indigo-300 font-semibold">
+              <Link to="/signup">Sign Up</Link>
+            </span>
+          </div>
         </div>
       </div>
     </div>
