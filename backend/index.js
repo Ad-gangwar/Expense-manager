@@ -4,12 +4,11 @@ require('dotenv').config();
 const passport = require('passport');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-const cors=require('cors');
+const cors = require('cors');
 
 const SECRET = process.env.SECRET;
-const URL=process.env.URL;
+const URL = process.env.URL;
 
-const User = require('./models/UserSchema');
 const User = require('./models/UserSchema');
 const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expense');
@@ -18,7 +17,10 @@ const incomeRoutes = require('./routes/income');
 const app = express();
 const PORT = 5001 || process.env.PORT;
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+}));
 app.use(express.json());
 
 
