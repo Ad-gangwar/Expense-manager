@@ -10,20 +10,25 @@ const SECRET = process.env.SECRET;
 const URL=process.env.URL;
 
 const User = require('./models/UserSchema');
+const User = require('./models/UserSchema');
+const authRoutes = require('./routes/auth');
+const expenseRoutes = require('./routes/expense');
+const incomeRoutes = require('./routes/income');
 
 const app = express();
-
-
 const PORT = 5001 || process.env.PORT;
 
 app.use(cors());
-
 app.use(express.json());
 
 
 app.get("/", (req, res) => {
     res.send('Hello world');
 });
+
+app.use('/auth', authRoutes);
+app.use('/expense', expenseRoutes);
+app.use('/income', incomeRoutes);
 
 mongoose.connect(URL).then((x) => {
     console.log('Connected to the database');
