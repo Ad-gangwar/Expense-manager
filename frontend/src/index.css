@@ -6,6 +6,7 @@ body {
   margin: 0;
 }
 
+/* Keep only the gradient text class */
 .gradient-text {
   background: linear-gradient(to right, #818cf8, #3b82f6, #a78bfa);
   -webkit-background-clip: text;

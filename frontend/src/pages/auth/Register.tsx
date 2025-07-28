@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 import HashLoader from 'react-spinners/HashLoader';
-import Carousel from "../../components/Carousel";
+import Carousel from "../../components/ui/Carousel";
 import { REGISTER_USER } from "../../api/authAPIs";
 
 const SignupPage = () => {

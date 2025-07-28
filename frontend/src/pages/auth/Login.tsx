@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import HashLoader from "react-spinners/HashLoader";
-import Carousel from "../../components/Carousel";
+import Carousel from "../../components/ui/Carousel";
 import { LOGIN_USER } from "../../api/authAPIs";
 
 const LoginPage = () => {
