@@ -24,7 +24,7 @@ const app = express();
 const PORT = 5001 || process.env.PORT;
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://expense-manager-uzof.vercel.app'],
     credentials: true
 }));
 app.use(express.json());
