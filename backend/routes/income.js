@@ -48,9 +48,40 @@ router.get("/", passport.authenticate("jwt", {session: false}), async (req, res)
 // GET /categories/summary - get total income by category for the user
 router.get("/categories/summary", passport.authenticate("jwt", { session: false }), async (req, res) => {
     const user = req.user._id;
+    const timeframe = req.query.timeframe || 'month';
+    
     try {
+        // Calculate date cutoff based on timeframe
+        const now = new Date();
+        let cutoffDate = new Date();
+        
+        switch(timeframe) {
+            case 'week':
+                cutoffDate.setDate(now.getDate() - 7);
+                break;
+            case 'month':
+                cutoffDate.setMonth(now.getMonth() - 1);
+                break;
+            case '3months':
+                cutoffDate.setMonth(now.getMonth() - 3);
+                break;
+            case 'year':
+                cutoffDate.setFullYear(now.getFullYear() - 1);
+                break;
+            case 'all':
+                cutoffDate = new Date(0); // Beginning of time
+                break;
+            default:
+                cutoffDate.setMonth(now.getMonth() - 1); // Default to last month
+        }
+
         const summary = await Income.aggregate([
-            { $match: { user: user } },
+            { 
+                $match: { 
+                    user: user,
+                    date: { $gte: cutoffDate }
+                } 
+            },
             { $group: { _id: "$category", amount: { $sum: "$amount" } } },
             { $project: { _id: 0, category: "$_id", amount: 1 } },
             { $sort: { amount: -1 } }
