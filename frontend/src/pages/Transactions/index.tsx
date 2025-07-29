@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BarChart2 } from 'lucide-react';
+import { Plus, BarChart2, Receipt } from 'lucide-react';
 import { fetchAllTransactions, addTransaction, deleteTransaction, updateTransaction } from '../../api/transactionAPIs';
 import { Transaction, TransactionFormData } from '../../types/transactions';
 import { defaultExpenseCategories } from '../../data/categories';
@@ -10,6 +10,7 @@ import {
   TransactionTable, 
   TransactionPagination 
 } from '../../components/transactions';
+import ReceiptUploader from '../../components/transactions/ReceiptUploader';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -28,6 +29,7 @@ const TransactionsPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [showReceiptUploader, setShowReceiptUploader] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [currentTransactionId, setCurrentTransactionId] = useState<string>('');
@@ -215,6 +217,25 @@ const TransactionsPage: React.FC = () => {
     });
   };
 
+  const handleExtractedReceiptData = (data: Partial<TransactionFormData>) => {
+    // Pre-fill the form with extracted data
+    setFormData(prev => ({
+      ...prev,
+      title: data.title || prev.title,
+      amount: data.amount !== undefined ? data.amount : prev.amount,
+      date: data.date || prev.date,
+      category: data.category || prev.category,
+      description: data.description || prev.description,
+      // Always set as expense for receipts
+      type: 'expense',
+    }));
+    
+    // Show the form after receipt processing
+    setIsEditing(false);
+    setShowReceiptUploader(false);
+    setShowForm(true);
+  };
+
   // Calculate pagination
   const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
   const paginatedTransactions = filteredTransactions.slice(
@@ -236,15 +257,23 @@ const TransactionsPage: React.FC = () => {
             </h1>
             <p className="text-gray-400 mt-1">Manage and track all your financial transactions</p>
           </div>
-          <button
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-            }}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20"
-          >
-            <Plus size={18} /> Add Transaction
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowReceiptUploader(true)}
+              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-semibold transition-all duration-300 shadow-lg hover:shadow-emerald-500/20"
+            >
+              <Receipt size={18} /> Scan Receipt
+            </button>
+            <button
+              onClick={() => {
+                resetForm();
+                setShowForm(true);
+              }}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20"
+            >
+              <Plus size={18} /> Add Transaction
+            </button>
+          </div>
         </div>
 
         {/* Add/Edit Transaction Form */}
@@ -257,6 +286,14 @@ const TransactionsPage: React.FC = () => {
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
             onCancel={resetForm}
+          />
+        )}
+
+        {/* Receipt Uploader */}
+        {showReceiptUploader && (
+          <ReceiptUploader 
+            onExtractedData={handleExtractedReceiptData}
+            onClose={() => setShowReceiptUploader(false)}
           />
         )}
 
