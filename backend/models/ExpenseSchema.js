@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const User = require('./UserSchema');
 
 const ExpenseSchema = new mongoose.Schema({
     title: {

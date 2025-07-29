@@ -61,8 +61,8 @@ const Dashboard: React.FC = () => {
         const totalExpenseVal = expenseMonth.reduce((sum: number, m: MonthData) => sum + m.amount, 0);
         setTotalIncome(totalIncomeVal);
         setTotalExpenses(totalExpenseVal);
-        setBudget(totalIncomeVal); // or fetch from user profile if available
-        setRemaining(totalIncomeVal - totalExpenseVal);
+        setBudget(100000); // Fixed monthly budget to 1 lakh
+        setRemaining(100000 - totalExpenseVal);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch data');
       } finally {

@@ -16,7 +16,7 @@ const CTASection: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4 justify-center">
           {token ? (
             <Link
-              to="/"
+              to="/dashboard"
               className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-full hover:shadow-lg hover:scale-105 transition duration-300"
             >
               Go to Dashboard

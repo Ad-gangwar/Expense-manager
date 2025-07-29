@@ -21,7 +21,7 @@ const HowItWorksSection: React.FC = () => {
   return (
     <div className="py-20 px-6 bg-[#0f172a]">
       <h2 className="text-4xl font-bold text-center text-white mb-16">
-        How It <span className="gradient-text">Works</span>
+        How It <span className="gradient-text">Works?</span>
       </h2>
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">

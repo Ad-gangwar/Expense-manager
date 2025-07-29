@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Expense = require('./ExpenseSchema');
 
 const UserSchema = new mongoose.Schema({
   email: {

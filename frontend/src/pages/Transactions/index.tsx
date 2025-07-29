@@ -57,6 +57,10 @@ const TransactionsPage: React.FC = () => {
     description: '',
   });
 
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'income' | 'expense' } | null>(null);
+
   // Fetch transactions on component mount
   useEffect(() => {
     fetchTransactions();
@@ -165,20 +169,25 @@ const TransactionsPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string, type: 'income' | 'expense') => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
-      setLoading(true);
-      try {
-        const result = await deleteTransaction(id, type);
-        if (result.success) {
-          toast.success(result.message);
-          // Refresh transactions
-          fetchTransactions();
-        }
-      } catch (err: any) {
-        toast.error(err.message || 'Failed to delete transaction');
-      } finally {
-        setLoading(false);
+    setDeleteTarget({ id, type });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setShowDeleteModal(false);
+    setLoading(true);
+    try {
+      const result = await deleteTransaction(deleteTarget.id, deleteTarget.type);
+      if (result.success) {
+        toast.success(result.message);
+        fetchTransactions();
       }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete transaction');
+    } finally {
+      setLoading(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -356,6 +365,32 @@ const TransactionsPage: React.FC = () => {
           />
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-[#1e293b] rounded-xl p-8 shadow-2xl border border-gray-700 w-full max-w-md mx-4 animate-fadeIn">
+            <h3 className="text-xl font-bold text-white mb-4">Delete Transaction?</h3>
+            <p className="text-gray-300 mb-6">Are you sure you want to delete this transaction? This action cannot be undone.</p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+                onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white rounded-lg transition shadow-lg hover:shadow-red-500/20"
+                onClick={confirmDelete}
+                disabled={loading}
+              >
+                {loading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

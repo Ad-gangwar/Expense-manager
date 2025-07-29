@@ -16,7 +16,7 @@ const HeroSection: React.FC = () => {
           with our intuitive personal finance assistant.
         </p>
         <Link
-          to={token ? "/" : "/login"}
+          to={token ? "/dashboard" : "/login"}
           className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-full hover:shadow-lg hover:scale-105 transition duration-300"
         >
           {token ? "Go to Dashboard" : "Get Started"} <ArrowRight size={20} />

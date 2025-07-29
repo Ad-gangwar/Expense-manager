@@ -14,7 +14,7 @@ const BenefitsSection: React.FC = () => {
   return (
     <div className="py-20 px-6 bg-[#0f172a]">
       <h2 className="text-4xl font-bold text-center text-white mb-16">
-        Why Choose <span className="gradient-text">ExpenseEase</span>
+        Why Choose <span className="gradient-text">ExpenseEase?</span>
       </h2>
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
