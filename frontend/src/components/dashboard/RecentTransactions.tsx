@@ -38,7 +38,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
             Recent Transactions
           </h2>
           <div className="bg-[#0d1424] px-3 py-1 rounded-full text-gray-300 text-sm font-medium border border-gray-700/50 shadow-inner">
-            Top 10 Transactions
+            Top 5 Transactions
           </div>
         </div>
         

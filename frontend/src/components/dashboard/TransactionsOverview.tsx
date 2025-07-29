@@ -57,15 +57,13 @@ const TransactionsOverview: React.FC<TransactionsOverviewProps> = ({ dailyData }
   const calculateBarSize = () => {
     if (!chartData || chartData.length === 0) return 18;
     
-    // Base size is 18px
     const baseSize = 18;
     
-    // Adjust based on number of data points
-    if (chartData.length <= 7) return baseSize; // Default size for 7 or fewer points
-    if (chartData.length <= 14) return Math.max(12, baseSize - 2); // Slightly smaller for 8-14 points
-    if (chartData.length <= 30) return Math.max(8, baseSize - 4); // Even smaller for 15-30 points
-    if (chartData.length <= 90) return Math.max(6, baseSize - 6); // Very small for 31-90 points
-    return Math.max(4, baseSize - 8); // Minimum size for more than 90 points
+    if (chartData.length <= 7) return baseSize; 
+    if (chartData.length <= 14) return Math.max(12, baseSize - 2); 
+    if (chartData.length <= 30) return Math.max(8, baseSize - 4); 
+    if (chartData.length <= 90) return Math.max(6, baseSize - 6); 
+    return Math.max(4, baseSize - 8); 
   };
 
   // Fetch data when timeframe changes
@@ -119,7 +117,6 @@ const TransactionsOverview: React.FC<TransactionsOverviewProps> = ({ dailyData }
 
   return (
     <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl p-6 shadow-xl relative overflow-hidden">
-      {/* Decorative background elements */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl"></div>
       

@@ -36,13 +36,11 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
     } catch (e) {
       console.error('Error reading sort preference from localStorage', e);
     }
-    
     return { field: 'date', direction: 'desc' };
   };
   
   const [sortField, setSortField] = useState<SortField>(getSavedSortPreference().field);
   const [sortDirection, setSortDirection] = useState<SortDirection>(getSavedSortPreference().direction);
-  const [showSortHint, setShowSortHint] = useState<boolean>(!localStorage.getItem('sortHintDismissed'));
 
   // Save sort preferences to localStorage when they change
   useEffect(() => {
@@ -58,28 +56,15 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      // Toggle direction if same field
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      // Set new field and default direction
       setSortField(field);
       setSortDirection('asc');
-    }
-    
-    // Hide the hint after first sort and save the preference
-    if (showSortHint) {
-      setShowSortHint(false);
-      try {
-        localStorage.setItem('sortHintDismissed', 'true');
-      } catch (e) {
-        console.error('Error saving hint preference to localStorage', e);
-      }
     }
   };
 
   const sortedTransactions = [...transactions].sort((a, b) => {
     let comparison = 0;
-
     switch (sortField) {
       case 'title':
         comparison = a.title.localeCompare(b.title);
@@ -96,7 +81,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
       default:
         comparison = 0;
     }
-
     return sortDirection === 'asc' ? comparison : -comparison;
   });
 
@@ -104,7 +88,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
     if (sortField !== field) {
       return <ArrowUpDown size={14} className="ml-1 opacity-30" />;
     }
-    
     return sortDirection === 'asc' ? 
       <ArrowUp size={14} className="ml-1" /> : 
       <ArrowDown size={14} className="ml-1" />;
@@ -128,15 +111,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
     XLSX.writeFile(workbook, 'transactions.xlsx');
-  };
-
-  const dismissSortHint = () => {
-    setShowSortHint(false);
-    try {
-      localStorage.setItem('sortHintDismissed', 'true');
-    } catch (e) {
-      console.error('Error saving hint preference to localStorage', e);
-    }
   };
 
   return (
@@ -207,21 +181,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
         
         {!loading && !error && transactions.length > 0 && (
           <>
-            {showSortHint && (
-              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3 mb-4 text-indigo-300 text-sm flex items-center justify-between">
-                <div className="flex items-center">
-                  <ArrowUpDown size={16} className="mr-2" />
-                  <span>Click on any column header to sort the transactions</span>
-                </div>
-                <button 
-                  onClick={dismissSortHint}
-                  className="text-indigo-300 hover:text-white"
-                  title="Dismiss"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
             <div className="overflow-hidden rounded-lg border border-gray-800/50">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">

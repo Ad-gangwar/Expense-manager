@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import HashLoader from "react-spinners/HashLoader";
 import Carousel from "../../components/ui/Carousel";
 import { LOGIN_USER } from "../../api/authAPIs";
+import img1 from '../../assets/carousel-img1.png';
+import img2 from '../../assets/carousel-img2.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -11,10 +13,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const slides = [
-    'https://github.com/Ad-gangwar/Web-Relay/blob/main/Screenshot_2024-07-27_151555-removebg-preview.png?raw=true',
-    'https://github.com/Ad-gangwar/Web-Relay/blob/main/Screenshot_2024-07-27_151618-removebg-preview.png?raw=true'
-  ];
+  const slides = [img1, img2];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,15 +39,13 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#1e3a8a]">
       <div className="flex w-[800px] h-[600px] bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl rounded-bl-[65px] overflow-hidden shadow-2xl">
-        
-        <div className="w-2/5 bg-gradient-to-b from-[#f1f5f9] to-[#e2e8f0] flex items-center justify-center m-3 rounded-xl rounded-bl-[65px] rounded-tr-[65px]">
+        <div className="w-2/5 bg-slate-500 flex items-center justify-center m-3 rounded-xl rounded-bl-[65px] rounded-tr-[65px]">
           <Carousel autoSlide={true}>
             {slides.map((s, i) => (
               <img key={i} src={s} alt="Expense-Ease" />
             ))}
           </Carousel>
         </div>
-
         <div className="w-3/5 p-6 px-8 mt-16">
           <h2 className="text-3xl font-bold text-white mb-4">
             Welcome to{" "}
@@ -71,7 +68,6 @@ const LoginPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-
             <div className="mb-12">
               <label className="block text-gray-300 mb-1" htmlFor="password">
                 Password
@@ -85,7 +81,6 @@ const LoginPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-
             <button
               className="w-full p-3 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition duration-300 shadow-lg"
               type="submit"

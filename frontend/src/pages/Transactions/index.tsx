@@ -13,8 +13,6 @@ import {
   TransactionHistoryUploader 
 } from '../../components/transactions';
 
-import * as XLSX from 'xlsx';
-
 const ITEMS_PER_PAGE = 10;
 
 interface FilterOptions {
@@ -262,27 +260,6 @@ const TransactionsPage: React.FC = () => {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  // Export to Excel
-  const handleExportExcel = () => {
-    if (!filteredTransactions.length) {
-      toast.error('No transactions to export');
-      return;
-    }
-    // Prepare data for Excel
-    const data = filteredTransactions.map(t => ({
-      Title: t.title,
-      Amount: t.amount,
-      Type: t.type,
-      Date: t.date,
-      Category: t.category,
-      Description: t.description,
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
-    XLSX.writeFile(workbook, 'transactions.xlsx');
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f172a] to-[#0d1424] py-8 px-4 md:px-8 bg-gradient-animate">

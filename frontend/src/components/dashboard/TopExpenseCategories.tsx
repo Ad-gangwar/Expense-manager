@@ -129,8 +129,7 @@ const TopExpenseCategories: React.FC<TopExpenseCategoriesProps> = ({ data }) => 
                   animationDuration={1200}
                   animationEasing="ease-out"
                 >
-                  {sorted.map((entry, idx) => {
-                    const color = EXPENSE_BAR_COLORS[idx % EXPENSE_BAR_COLORS.length];
+                  {sorted.map((_, idx) => {
                     return (
                       <Cell 
                         key={`cell-${idx}`} 

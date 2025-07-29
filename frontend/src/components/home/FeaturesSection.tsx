@@ -47,7 +47,6 @@ const FeaturesSection: React.FC = () => {
       </h2>
       
       <div className="max-w-5xl mx-auto relative">
-        {/* Vertical Line */}
         <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-indigo-500 via-blue-600 to-purple-600 rounded-full"></div>
         
         <FeatureItem

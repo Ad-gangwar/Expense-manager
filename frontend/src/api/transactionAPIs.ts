@@ -1,4 +1,4 @@
-import { Transaction, TransactionFormData, TransactionsResponse } from "../types/transactions";
+import { Transaction, TransactionFormData } from "../types/transactions";
 
 // Fetch all transactions (both income and expense)
 export async function fetchAllTransactions(): Promise<Transaction[]> {

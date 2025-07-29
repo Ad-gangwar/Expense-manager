@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart as PieChartIcon, Calendar } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { fetchExpenseCategorySummary, fetchIncomeCategorySummary } from '../../api/authAPIs';
+import { fetchExpenseCategorySummary } from '../../api/expenseAPIs';
+import { fetchIncomeCategorySummary } from '../../api/incomeAPIs';
 
 interface CategoryData {
   category: string;
@@ -76,7 +77,7 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data: initialData, 
         setIsLoading(false);
       }
     };
-    
+
     // If we already have data for this timeframe and it's the initial 'month' timeframe, use it
     if (initialData && initialData.length > 0 && timeframe === 'month') {
       setData(initialData);
@@ -98,10 +99,9 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data: initialData, 
       </div>
     );
   }
-  
+
   const total = data.reduce((sum, item) => sum + item.amount, 0);
   const COLORS = colorScheme === 'expense' ? COLORS_EXPENSE : COLORS_INCOME;
-  const gradientId = `pieGradient${colorScheme}`;
 
   const timeframeOptions = [
     { value: 'week', label: 'Last 7 Days' },
@@ -120,14 +120,13 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data: initialData, 
       {/* Decorative background elements */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl"></div>
-      
+
       <div className="flex justify-between items-center mb-6 relative z-10">
         <h2 className="text-2xl font-bold text-white flex items-center">
-          <div className={`p-2 rounded-lg mr-3 shadow-lg ${
-            colorScheme === 'income' 
-              ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+          <div className={`p-2 rounded-lg mr-3 shadow-lg ${colorScheme === 'income'
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600'
               : 'bg-gradient-to-r from-purple-500 to-pink-600'
-          }`}>
+            }`}>
             <PieChartIcon className="text-white" size={24} />
           </div>
           {title}
@@ -139,21 +138,19 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data: initialData, 
           </div>
         </div>
       </div>
-      
+
       <div className="flex flex-wrap gap-2 mb-4">
         {timeframeOptions.map((option) => (
           <button
             key={option.value}
             onClick={() => handleTimeframeChange(option.value as any)}
-            className={`px-3 py-1 rounded-full text-sm transition-all ${
-              timeframe === option.value
-                ? `bg-gradient-to-r ${
-                    colorScheme === 'income' 
-                      ? 'from-green-500 to-emerald-600' 
-                      : 'from-purple-500 to-pink-600'
-                  } text-white font-medium shadow-md`
+            className={`px-3 py-1 rounded-full text-sm transition-all ${timeframe === option.value
+                ? `bg-gradient-to-r ${colorScheme === 'income'
+                  ? 'from-green-500 to-emerald-600'
+                  : 'from-purple-500 to-pink-600'
+                } text-white font-medium shadow-md`
                 : 'bg-[#0f172a] text-gray-400 hover:text-gray-200 border border-gray-800'
-            }`}
+              }`}
           >
             {option.label}
           </button>
@@ -162,22 +159,20 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data: initialData, 
 
       {isLoading ? (
         <div className="flex items-center justify-center h-[320px]">
-          <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${
-            colorScheme === 'income' ? 'border-green-500' : 'border-purple-500'
-          }`}></div>
+          <div className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${colorScheme === 'income' ? 'border-green-500' : 'border-purple-500'
+            }`}></div>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center flex-1 relative z-10">
           {/* Donut Chart */}
           <div className="relative w-56 h-56 flex items-center justify-center mb-6">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`w-36 h-36 rounded-full ${
-                colorScheme === 'income'
+              <div className={`w-36 h-36 rounded-full ${colorScheme === 'income'
                   ? 'bg-gradient-to-br from-green-500/10 to-cyan-500/5'
                   : 'bg-gradient-to-br from-purple-500/10 to-pink-500/5'
-              } blur-md`}></div>
+                } blur-md`}></div>
             </div>
-            
+
             <ResponsiveContainer width={220} height={220}>
               <PieChart>
                 <defs>
@@ -205,44 +200,46 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data: initialData, 
                   animationEasing="ease-out"
                 >
                   {data.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
+                    <Cell
+                      key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
                       stroke="rgba(0,0,0,0.1)"
                       strokeWidth={1}
                     />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  wrapperStyle={{ zIndex: 50 }}
+                />
               </PieChart>
             </ResponsiveContainer>
-            
+
             {/* Center total */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center bg-[#0f172a]/80 backdrop-blur-sm p-3 rounded-full w-32 h-32 justify-center">
               <span className="text-gray-300 text-sm font-medium">Total</span>
-              <span className={`text-2xl font-bold ${
-                colorScheme === 'income' ? 'text-green-400' : 'text-purple-400'
-              }`}>
+              <span className={`text-2xl font-bold ${colorScheme === 'income' ? 'text-green-400' : 'text-purple-400'
+                }`}>
                 ₹{total.toLocaleString(undefined, { minimumFractionDigits: 0 })}
               </span>
             </div>
           </div>
-          
+
           {/* Legend */}
           <div className="w-full overflow-auto max-h-60 pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
             <div className="space-y-3">
               {data.map((item, idx) => {
                 const percent = total ? (item.amount / total) * 100 : 0;
                 const color = COLORS[idx % COLORS.length];
-                
+
                 return (
-                  <div 
-                    key={item.category} 
+                  <div
+                    key={item.category}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors"
                   >
                     <div className="flex items-center">
-                      <span 
-                        className="w-4 h-4 rounded mr-2 shadow-sm" 
+                      <span
+                        className="w-4 h-4 rounded mr-2 shadow-sm"
                         style={{ backgroundColor: color }}
                       ></span>
                       <span className="text-gray-300 text-base">{item.category}</span>
@@ -251,11 +248,11 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data: initialData, 
                       <span className="text-white font-medium">
                         ₹{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </span>
-                      <span 
-                        className="px-2 py-0.5 rounded-full text-xs font-semibold" 
-                        style={{ 
-                          backgroundColor: `${color}20`, 
-                          color: color 
+                      <span
+                        className="px-2 py-0.5 rounded-full text-xs font-semibold"
+                        style={{
+                          backgroundColor: `${color}20`,
+                          color: color
                         }}
                       >
                         {percent.toFixed(1)}%

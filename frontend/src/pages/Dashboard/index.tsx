@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { fetchExpenseCategorySummary, fetchIncomeCategorySummary, fetchExpenseMonthlySummary, fetchIncomeMonthlySummary } from '../../api/authAPIs';
+import { fetchExpenseCategorySummary } from '../../api/expenseAPIs';
+import { fetchIncomeCategorySummary } from '../../api/incomeAPIs';
+import { fetchExpenseMonthlySummary } from '../../api/expenseAPIs';
+import { fetchIncomeMonthlySummary } from '../../api/incomeAPIs';
 import { fetchDailyTransactions, fetchAllTransactions } from '../../api/transactionAPIs';
 import { CategoryData, MonthData, Transaction, DailyTransactionData } from '../../types/dashboard';
 import { 

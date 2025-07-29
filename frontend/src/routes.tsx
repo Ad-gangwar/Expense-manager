@@ -6,6 +6,7 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/Dashboard";
 import Navbar from "./components/Navbar";
 import TransactionsPage from './pages/Transactions/index';
+import Profile from './pages/profile';
 
 // Layout with Navbar
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -62,6 +63,16 @@ const Router: React.FC = () => {
             <AppLayout>
               <PrivateRoute>
                 <TransactionsPage />
+              </PrivateRoute>
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <AppLayout>
+              <PrivateRoute>
+                <Profile />
               </PrivateRoute>
             </AppLayout>
           }
