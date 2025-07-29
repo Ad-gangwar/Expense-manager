@@ -142,9 +142,3 @@ Expense Manager is a comprehensive personal finance application designed to help
 3. **Transactions**: Add new transactions, upload receipts, or import transaction history
 4. **Filter & Search**: Use the filter options to find specific transactions
 5. **Reports**: Analyze your spending patterns through various charts and visualizations
-
-## License
-ISC
-
-## Contributors
-- Aditya Gangwar
