@@ -113,6 +113,45 @@ router.get("/monthly/summary", passport.authenticate("jwt", { session: false }),
 });
 
 
+// PUT /:id - update income (mounted at /income)
+// Requires authentication via JWT
+router.put("/:id", passport.authenticate("jwt", {session: false}), async (req, res) => {
+    const {id} = req.params;
+    const user = req.user._id;
+    const {title, amount, category, description, date} = req.body;
+    
+    try {
+        // Validate required fields and amount
+        if(!title || !category || !description || !date){
+            return res.status(400).json({message: 'All fields are required!'})
+        }
+        if (typeof amount !== 'number' || amount <= 0) {
+            return res.status(400).json({message: 'Amount must be a positive number!'})
+        }
+        
+        // Find and update the income
+        const income = await Income.findOne({ _id: id, user: user });
+        
+        if (!income) {
+            return res.status(404).json({message: 'Income not found or you do not have permission to update it'});
+        }
+        
+        income.title = title;
+        income.amount = amount;
+        income.category = category;
+        income.description = description;
+        income.date = date;
+        
+        await income.save();
+        
+        res.status(200).json({message: 'Income Updated'});
+    } catch (err) {
+        console.error("Error updating income:", err);
+        res.status(500).json({message: 'Server Error'});
+    }
+});
+
+
 // DELETE /:id - delete income (mounted at /income)
 // Requires authentication via JWT
 router.delete("/:id", passport.authenticate("jwt", {session: false}),  async (req, res) =>{

@@ -143,4 +143,42 @@ router.delete("/:id", passport.authenticate("jwt", {session: false}),  async (re
     }
 });
 
+// PUT /:id - update expense (mounted at /expense)
+// Requires authentication via JWT
+router.put("/:id", passport.authenticate("jwt", {session: false}), async (req, res) => {
+    const {id} = req.params;
+    const user = req.user._id;
+    const {title, amount, category, description, date} = req.body;
+    
+    try {
+        // Validate required fields and amount
+        if(!title || !category || !description || !date){
+            return res.status(400).json({message: 'All fields are required!'})
+        }
+        if (typeof amount !== 'number' || amount <= 0) {
+            return res.status(400).json({message: 'Amount must be a positive number!'})
+        }
+        
+        // Find and update the expense
+        const expense = await Expense.findOne({ _id: id, user: user });
+        
+        if (!expense) {
+            return res.status(404).json({message: 'Expense not found or you do not have permission to update it'});
+        }
+        
+        expense.title = title;
+        expense.amount = amount;
+        expense.category = category;
+        expense.description = description;
+        expense.date = date;
+        
+        await expense.save();
+        
+        res.status(200).json({message: 'Expense Updated'});
+    } catch (err) {
+        console.error("Error updating expense:", err);
+        res.status(500).json({message: 'Server Error'});
+    }
+});
+
 module.exports = router;
