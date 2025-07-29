@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, Trash2, Calendar, Tag, ArrowUpRight, ArrowDownRight, Edit, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { DollarSign, Trash2, Calendar, Tag, ArrowUpRight, ArrowDownRight, Edit, ArrowUp, ArrowDown, ArrowUpDown, FileSpreadsheet } from 'lucide-react';
 import { Transaction } from '../../types/transactions';
+import * as XLSX from 'xlsx';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -109,6 +110,26 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
       <ArrowDown size={14} className="ml-1" />;
   };
 
+  // Export to Excel (all sorted transactions)
+  const handleExportExcel = () => {
+    if (!sortedTransactions.length) {
+      alert('No transactions to export');
+      return;
+    }
+    const data = sortedTransactions.map(t => ({
+      Title: t.title,
+      Amount: t.amount,
+      Type: t.type,
+      Date: t.date,
+      Category: t.category,
+      Description: t.description,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
+    XLSX.writeFile(workbook, 'transactions.xlsx');
+  };
+
   const dismissSortHint = () => {
     setShowSortHint(false);
     try {
@@ -132,12 +153,24 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
             </div>
             Transactions
           </h2>
-          
-          {!loading && !error && transactions.length > 0 && (
-            <div className="bg-[#0d1424] px-3 py-1 rounded-full text-gray-300 text-sm font-medium border border-gray-700/50 shadow-inner">
-              {transactions.length} {transactions.length === 1 ? 'Transaction' : 'Transactions'}
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {!loading && !error && transactions.length > 0 && (
+              <>
+                <div className="bg-[#0d1424] px-3 py-1 rounded-full text-gray-300 text-sm font-medium border border-gray-700/50 shadow-inner flex items-center h-9">
+                  {transactions.length} {transactions.length === 1 ? 'Transaction' : 'Transactions'}
+                </div>
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-4 py-1.5 rounded-full font-medium border border-yellow-400/30 shadow-inner h-9 text-sm transition-all duration-300"
+                  style={{ minWidth: 0 }}
+                  title="Export all shown transactions to Excel"
+                >
+                  <FileSpreadsheet size={16} />
+                  Export
+                </button>
+              </>
+            )}
+          </div>
         </div>
         
         {loading && (

@@ -20,7 +20,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
   
   // Get the top 10 most recent transactions
   const topTransactions = transactions && transactions.length > 0 
-    ? [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10)
+    ? [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
     : [];
   
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BarChart2, Receipt } from 'lucide-react';
+import { Plus, BarChart2, Receipt, List } from 'lucide-react';
 import { fetchAllTransactions, addTransaction, deleteTransaction, updateTransaction } from '../../api/transactionAPIs';
 import { Transaction, TransactionFormData } from '../../types/transactions';
 import { defaultExpenseCategories } from '../../data/categories';
@@ -8,9 +8,12 @@ import {
   TransactionForm, 
   TransactionFilters, 
   TransactionTable, 
-  TransactionPagination 
+  TransactionPagination, 
+  ReceiptUploader, 
+  TransactionHistoryUploader 
 } from '../../components/transactions';
-import ReceiptUploader from '../../components/transactions/ReceiptUploader';
+
+import * as XLSX from 'xlsx';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -30,6 +33,7 @@ const TransactionsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [showReceiptUploader, setShowReceiptUploader] = useState<boolean>(false);
+  const [showHistoryUploader, setShowHistoryUploader] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [currentTransactionId, setCurrentTransactionId] = useState<string>('');
@@ -236,12 +240,49 @@ const TransactionsPage: React.FC = () => {
     setShowForm(true);
   };
 
+  const handleExtractedHistory = async (data: TransactionFormData[]) => {
+    // Import all extracted transactions
+    setLoading(true);
+    try {
+      for (const t of data) {
+        await addTransaction(t);
+      }
+      toast.success(`${data.length} transactions imported successfully!`);
+      fetchTransactions();
+    } catch (err: any) {
+      toast.error('Failed to import some transactions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Calculate pagination
   const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
   const paginatedTransactions = filteredTransactions.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  // Export to Excel
+  const handleExportExcel = () => {
+    if (!filteredTransactions.length) {
+      toast.error('No transactions to export');
+      return;
+    }
+    // Prepare data for Excel
+    const data = filteredTransactions.map(t => ({
+      Title: t.title,
+      Amount: t.amount,
+      Type: t.type,
+      Date: t.date,
+      Category: t.category,
+      Description: t.description,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
+    XLSX.writeFile(workbook, 'transactions.xlsx');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f172a] to-[#0d1424] py-8 px-4 md:px-8 bg-gradient-animate">
@@ -258,6 +299,12 @@ const TransactionsPage: React.FC = () => {
             <p className="text-gray-400 mt-1">Manage and track all your financial transactions</p>
           </div>
           <div className="flex gap-3">
+            <button
+              onClick={() => setShowHistoryUploader(true)}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-semibold transition-all duration-300 shadow-lg hover:shadow-green-500/20"
+            >
+              <List size={18} /> Upload History
+            </button>
             <button
               onClick={() => setShowReceiptUploader(true)}
               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-semibold transition-all duration-300 shadow-lg hover:shadow-emerald-500/20"
@@ -294,6 +341,14 @@ const TransactionsPage: React.FC = () => {
           <ReceiptUploader 
             onExtractedData={handleExtractedReceiptData}
             onClose={() => setShowReceiptUploader(false)}
+          />
+        )}
+
+        {/* Transaction History Uploader */}
+        {showHistoryUploader && (
+          <TransactionHistoryUploader
+            onExtractedTransactions={handleExtractedHistory}
+            onClose={() => setShowHistoryUploader(false)}
           />
         )}
 

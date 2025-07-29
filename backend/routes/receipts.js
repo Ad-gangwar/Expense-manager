@@ -226,4 +226,106 @@ router.post('/process', passport.authenticate('jwt', { session: false }), upload
   }
 });
 
+// POST /process-history - Process a transaction history PDF and extract transactions
+router.post('/process-history', passport.authenticate('jwt', { session: false }), upload.single('history'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+
+  try {
+    const filePath = req.file.path;
+    const fileType = req.file.mimetype;
+    const fileData = fs.readFileSync(filePath);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-001" });
+    const prompt = `
+      The uploaded PDF contains a table of financial transactions. Extract each row as a transaction object with the following fields:
+      - title: string (short description or merchant name)
+      - amount: number
+      - type: "income" or "expense"
+      - date: string (YYYY-MM-DD)
+      - category: string (choose from Food, Travel, Shopping, Healthcare, Education, Entertainment, Utilities, Housing, Transportation, Others)
+      - description: string (optional, details about the transaction)
+      
+      Return a JSON array of objects, one for each transaction. If a field is missing, use null. Example:
+      [
+        { "title": "Starbucks", "amount": 250, "type": "expense", "date": "2024-06-01", "category": "Food", "description": "Coffee" },
+        ...
+      ]
+    `;
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: prompt },
+            { inline_data: {
+                mime_type: fileType,
+                data: fileData.toString('base64')
+              }
+            }
+          ]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.1,
+        topP: 0.95,
+        topK: 64,
+        maxOutputTokens: 4096,
+      }
+    });
+    if (!result || !result.response) {
+      throw new Error("No response received from Gemini API");
+    }
+    const response = await result.response;
+    const text = response.text();
+    console.log("Raw API response (history):", text);
+    // Try to extract JSON array from code block or text
+    let transactions = [];
+    const arrayMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/\[([\s\S]*?)\]/);
+    if (arrayMatch) {
+      try {
+        transactions = JSON.parse(arrayMatch[1] || arrayMatch[0]);
+      } catch (e) {
+        console.error('Failed to parse transactions array:', e);
+      }
+    }
+    if (!Array.isArray(transactions)) {
+      // Try to find the first array in the text
+      const arrMatch = text.match(/\[([\s\S]*?)\]/);
+      if (arrMatch) {
+        try {
+          transactions = JSON.parse('[' + arrMatch[1] + ']');
+        } catch (e) {
+          console.error('Failed to parse fallback array:', e);
+        }
+      }
+    }
+    // Clean up file
+    fs.unlink(filePath, (err) => {
+      if (err) console.error("Error deleting file:", err);
+    });
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      return res.status(500).json({ message: 'Failed to extract transactions from PDF.' });
+    }
+    // Ensure all fields are present and types are correct
+    transactions = transactions.map(t => ({
+      title: t.title || '',
+      amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount) || 0,
+      type: t.type === 'income' ? 'income' : 'expense',
+      date: t.date || '',
+      category: t.category || 'Others',
+      description: t.description || ''
+    }));
+    return res.status(200).json({ transactions });
+  } catch (error) {
+    console.error("Error processing transaction history:", error);
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error("Error deleting file:", err);
+      });
+    }
+    return res.status(500).json({ message: 'Failed to process transaction history: ' + error.message });
+  }
+});
+
 module.exports = router; 
