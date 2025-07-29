@@ -16,12 +16,21 @@ code {
     monospace;
 }
 
+.gradient-text {
+  background: linear-gradient(to right, #818cf8, #3b82f6, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
 /* Custom animations for dashboard */
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -33,6 +42,7 @@ code {
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -43,9 +53,11 @@ code {
   0% {
     box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
   }
@@ -55,9 +67,11 @@ code {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -82,23 +96,23 @@ code {
 }
 
 /* Staggered animations for dashboard cards */
-.grid > div:nth-child(1) {
+.grid>div:nth-child(1) {
   animation-delay: 0.1s;
 }
 
-.grid > div:nth-child(2) {
+.grid>div:nth-child(2) {
   animation-delay: 0.2s;
 }
 
-.grid > div:nth-child(3) {
+.grid>div:nth-child(3) {
   animation-delay: 0.3s;
 }
 
-.grid > div:nth-child(4) {
+.grid>div:nth-child(4) {
   animation-delay: 0.4s;
 }
 
-.grid > div:nth-child(5) {
+.grid>div:nth-child(5) {
   animation-delay: 0.5s;
 }
 

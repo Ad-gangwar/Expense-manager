@@ -5,7 +5,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Dashboard from "./pages/Dashboard";
 import Navbar from "./components/Navbar";
-import TransactionsPage from './pages/Transactions';
+import TransactionsPage from './pages/Transactions/index';
 
 // Layout with Navbar
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
