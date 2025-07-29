@@ -33,7 +33,7 @@ const Navbar: React.FC = () => {
             </Link>
 
             <Link
-              to="/add-transaction"
+              to="/transactions"
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#1e293b] text-white font-medium hover:bg-[#0f172a] transition"
             >
               <SquarePen size={18} />

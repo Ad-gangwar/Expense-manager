@@ -48,9 +48,9 @@ export async function LOGIN_USER(formData: Omit<AuthFormData, 'name'>): Promise<
   }
 }
 
-export async function fetchExpenseCategorySummary() {
+export async function fetchExpenseCategorySummary(timeframe: 'week' | 'month' | '3months' | 'year' | 'all' = 'month') {
   const token = localStorage.getItem("expToken");
-  const res = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/expense/categories/summary`, {
+  const res = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/expense/categories/summary?timeframe=${timeframe}`, {
     headers: {
       "Authorization": `Bearer ${token}`,
     },
@@ -61,9 +61,9 @@ export async function fetchExpenseCategorySummary() {
   return data.data;
 }
 
-export async function fetchIncomeCategorySummary() {
+export async function fetchIncomeCategorySummary(timeframe: 'week' | 'month' | '3months' | 'year' | 'all' = 'month') {
   const token = localStorage.getItem("expToken");
-  const res = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/income/categories/summary`, {
+  const res = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/income/categories/summary?timeframe=${timeframe}`, {
     headers: {
       "Authorization": `Bearer ${token}`,
     },

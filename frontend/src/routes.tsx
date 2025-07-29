@@ -5,6 +5,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Dashboard from "./pages/Dashboard";
 import Navbar from "./components/Navbar";
+import TransactionsPage from './pages/Transactions';
 
 // Layout with Navbar
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -53,6 +54,16 @@ const Router: React.FC = () => {
           path="/signup"
           element={
             !token ? <Register /> : <Navigate to="/" replace />
+          }
+        />
+        <Route
+          path="/transactions"
+          element={
+            <AppLayout>
+              <PrivateRoute>
+                <TransactionsPage />
+              </PrivateRoute>
+            </AppLayout>
           }
         />
       </RoutesList>
