@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, BarChart2 } from 'lucide-react';
-import { fetchAllTransactions, addTransaction, deleteTransaction } from '../../api/transactionAPIs';
+import { fetchAllTransactions, addTransaction, deleteTransaction, updateTransaction } from '../../api/transactionAPIs';
 import { Transaction, TransactionFormData } from '../../types/transactions';
 import { defaultExpenseCategories } from '../../data/categories';
 import toast from 'react-hot-toast';
@@ -29,6 +29,9 @@ const TransactionsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [currentTransactionId, setCurrentTransactionId] = useState<string>('');
+  const [currentTransactionType, setCurrentTransactionType] = useState<'income' | 'expense'>('expense');
   
   // Filters state
   const [filters, setFilters] = useState<FilterOptions>({
@@ -136,24 +139,22 @@ const TransactionsPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const result = await addTransaction(formData);
+      let result;
+      
+      if (isEditing) {
+        result = await updateTransaction(currentTransactionId, currentTransactionType, formData);
+      } else {
+        result = await addTransaction(formData);
+      }
+      
       if (result.success) {
         toast.success(result.message);
-        setShowForm(false);
-        // Reset form
-        setFormData({
-          title: '',
-          amount: 0,
-          type: 'expense',
-          date: new Date().toISOString().split('T')[0],
-          category: defaultExpenseCategories[0],
-          description: '',
-        });
+        resetForm();
         // Refresh transactions
         fetchTransactions();
       }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to add transaction');
+      toast.error(err.message || `Failed to ${isEditing ? 'update' : 'add'} transaction`);
     } finally {
       setLoading(false);
     }
@@ -175,6 +176,43 @@ const TransactionsPage: React.FC = () => {
         setLoading(false);
       }
     }
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setIsEditing(true);
+    setCurrentTransactionId(transaction._id);
+    setCurrentTransactionType(transaction.type);
+    
+    // Format the date to YYYY-MM-DD for the input field
+    const formattedDate = new Date(transaction.date).toISOString().split('T')[0];
+    
+    setFormData({
+      title: transaction.title,
+      amount: transaction.amount,
+      type: transaction.type,
+      date: formattedDate,
+      category: transaction.category,
+      description: transaction.description || '',
+    });
+    
+    setShowForm(true);
+  };
+
+  const resetForm = () => {
+    setShowForm(false);
+    setIsEditing(false);
+    setCurrentTransactionId('');
+    setCurrentTransactionType('expense');
+    
+    // Reset form data
+    setFormData({
+      title: '',
+      amount: 0,
+      type: 'expense',
+      date: new Date().toISOString().split('T')[0],
+      category: defaultExpenseCategories[0],
+      description: '',
+    });
   };
 
   // Calculate pagination
@@ -199,21 +237,26 @@ const TransactionsPage: React.FC = () => {
             <p className="text-gray-400 mt-1">Manage and track all your financial transactions</p>
           </div>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
             className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-semibold transition-all duration-300 shadow-lg hover:shadow-indigo-500/20"
           >
             <Plus size={18} /> Add Transaction
           </button>
         </div>
 
-        {/* Add Transaction Form */}
+        {/* Add/Edit Transaction Form */}
         {showForm && (
           <TransactionForm
             formData={formData}
             loading={loading}
+            isEditing={isEditing}
+            transactionId={currentTransactionId}
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
-            onCancel={() => setShowForm(false)}
+            onCancel={resetForm}
           />
         )}
 
@@ -230,6 +273,7 @@ const TransactionsPage: React.FC = () => {
           loading={loading}
           error={error}
           onDelete={handleDelete}
+          onEdit={handleEdit}
         />
 
         {/* Pagination */}

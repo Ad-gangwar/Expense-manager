@@ -103,6 +103,35 @@ export async function deleteTransaction(id: string, type: 'income' | 'expense'):
   }
 } 
 
+// Update an existing transaction
+export async function updateTransaction(id: string, type: 'income' | 'expense', transaction: TransactionFormData): Promise<{ success: boolean, message: string }> {
+  const token = localStorage.getItem("expToken");
+  const endpoint = type === 'income' ? 'income' : 'expense';
+  
+  try {
+    const res = await fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/${endpoint}/${id}`, {
+      method: 'PUT',
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(transaction),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || `Failed to update ${transaction.type}`);
+
+    return { 
+      success: true, 
+      message: data.message || `${transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)} updated successfully` 
+    };
+  } catch (error) {
+    console.error(`Error updating ${transaction.type}:`, error);
+    throw error;
+  }
+}
+
 // Fetch daily transaction data for the TransactionsOverview graph
 export async function fetchDailyTransactions(timeframe: 'week' | 'month' | '3months' | 'year' | 'all' = 'month'): Promise<{ date: string; income: number; expense: number }[]> {
   const token = localStorage.getItem("expToken");

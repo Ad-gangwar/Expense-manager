@@ -1,5 +1,5 @@
-import React from 'react';
-import { DollarSign, Trash2, Calendar, Tag, ArrowUpRight, ArrowDownRight, Edit } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { DollarSign, Trash2, Calendar, Tag, ArrowUpRight, ArrowDownRight, Edit, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { Transaction } from '../../types/transactions';
 
 interface TransactionTableProps {
@@ -10,6 +10,14 @@ interface TransactionTableProps {
   onEdit?: (transaction: Transaction) => void;
 }
 
+type SortField = 'title' | 'category' | 'date' | 'amount';
+type SortDirection = 'asc' | 'desc';
+
+interface SortPreference {
+  field: SortField;
+  direction: SortDirection;
+}
+
 const TransactionTable: React.FC<TransactionTableProps> = ({
   transactions,
   loading,
@@ -17,6 +25,99 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   onDelete,
   onEdit
 }) => {
+  // Initialize sort state from localStorage or default to date desc
+  const getSavedSortPreference = (): SortPreference => {
+    try {
+      const saved = localStorage.getItem('transactionSortPreference');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Error reading sort preference from localStorage', e);
+    }
+    
+    return { field: 'date', direction: 'desc' };
+  };
+  
+  const [sortField, setSortField] = useState<SortField>(getSavedSortPreference().field);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(getSavedSortPreference().direction);
+  const [showSortHint, setShowSortHint] = useState<boolean>(!localStorage.getItem('sortHintDismissed'));
+
+  // Save sort preferences to localStorage when they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('transactionSortPreference', JSON.stringify({
+        field: sortField,
+        direction: sortDirection
+      }));
+    } catch (e) {
+      console.error('Error saving sort preference to localStorage', e);
+    }
+  }, [sortField, sortDirection]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default direction
+      setSortField(field);
+      setSortDirection('asc');
+    }
+    
+    // Hide the hint after first sort and save the preference
+    if (showSortHint) {
+      setShowSortHint(false);
+      try {
+        localStorage.setItem('sortHintDismissed', 'true');
+      } catch (e) {
+        console.error('Error saving hint preference to localStorage', e);
+      }
+    }
+  };
+
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortField) {
+      case 'title':
+        comparison = a.title.localeCompare(b.title);
+        break;
+      case 'category':
+        comparison = a.category.localeCompare(b.category);
+        break;
+      case 'date':
+        comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+        break;
+      case 'amount':
+        comparison = a.amount - b.amount;
+        break;
+      default:
+        comparison = 0;
+    }
+
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown size={14} className="ml-1 opacity-30" />;
+    }
+    
+    return sortDirection === 'asc' ? 
+      <ArrowUp size={14} className="ml-1" /> : 
+      <ArrowDown size={14} className="ml-1" />;
+  };
+
+  const dismissSortHint = () => {
+    setShowSortHint(false);
+    try {
+      localStorage.setItem('sortHintDismissed', 'true');
+    } catch (e) {
+      console.error('Error saving hint preference to localStorage', e);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl p-6 shadow-xl border border-gray-800/40 relative overflow-hidden">
       {/* Decorative elements */}
@@ -72,95 +173,148 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
         )}
         
         {!loading && !error && transactions.length > 0 && (
-          <div className="overflow-hidden rounded-lg border border-gray-800/50">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-[#0f172a]">
-                    <th className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800">Title</th>
-                    <th className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800">Category</th>
-                    <th className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800">Date</th>
-                    <th className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800">Amount</th>
-                    <th className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((transaction, index) => (
-                    <tr 
-                      key={transaction._id} 
-                      className={`border-b border-gray-800 hover:bg-[#0d1424] transition group ${
-                        index % 2 === 0 ? 'bg-[#0f172a]/30' : 'bg-[#0f172a]/60'
-                      }`}
-                    >
-                      <td className="py-3 px-4">
+          <>
+            {showSortHint && (
+              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3 mb-4 text-indigo-300 text-sm flex items-center justify-between">
+                <div className="flex items-center">
+                  <ArrowUpDown size={16} className="mr-2" />
+                  <span>Click on any column header to sort the transactions</span>
+                </div>
+                <button 
+                  onClick={dismissSortHint}
+                  className="text-indigo-300 hover:text-white"
+                  title="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            <div className="overflow-hidden rounded-lg border border-gray-800/50">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-[#0f172a]">
+                      <th 
+                        className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800 cursor-pointer hover:text-white transition-colors"
+                        onClick={() => handleSort('title')}
+                        title="Sort by title"
+                      >
                         <div className="flex items-center">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
-                            transaction.type === 'income' 
-                              ? 'bg-green-500/10 text-green-500' 
-                              : 'bg-red-500/10 text-red-500'
-                          }`}>
-                            {transaction.type === 'income' 
-                              ? <ArrowUpRight size={14} /> 
-                              : <ArrowDownRight size={14} />
-                            }
-                          </div>
-                          <div>
-                            <div className="text-white font-medium">{transaction.title}</div>
-                            <div className="text-gray-500 text-xs">
-                              {transaction.type === 'income' ? 'Income' : 'Expense'}
+                          Title
+                          {renderSortIcon('title')}
+                        </div>
+                      </th>
+                      <th 
+                        className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800 cursor-pointer hover:text-white transition-colors"
+                        onClick={() => handleSort('category')}
+                        title="Sort by category"
+                      >
+                        <div className="flex items-center">
+                          Category
+                          {renderSortIcon('category')}
+                        </div>
+                      </th>
+                      <th 
+                        className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800 cursor-pointer hover:text-white transition-colors"
+                        onClick={() => handleSort('date')}
+                        title="Sort by date"
+                      >
+                        <div className="flex items-center">
+                          Date
+                          {renderSortIcon('date')}
+                        </div>
+                      </th>
+                      <th 
+                        className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800 cursor-pointer hover:text-white transition-colors"
+                        onClick={() => handleSort('amount')}
+                        title="Sort by amount"
+                      >
+                        <div className="flex items-center">
+                          Amount
+                          {renderSortIcon('amount')}
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 text-gray-400 font-medium border-b border-gray-800">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedTransactions.map((transaction, index) => (
+                      <tr 
+                        key={transaction._id} 
+                        className={`border-b border-gray-800 hover:bg-[#0d1424] transition group ${
+                          index % 2 === 0 ? 'bg-[#0f172a]/30' : 'bg-[#0f172a]/60'
+                        }`}
+                      >
+                        <td className="py-3 px-4">
+                          <div className="flex items-center">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+                              transaction.type === 'income' 
+                                ? 'bg-green-500/10 text-green-500' 
+                                : 'bg-red-500/10 text-red-500'
+                            }`}>
+                              {transaction.type === 'income' 
+                                ? <ArrowUpRight size={14} /> 
+                                : <ArrowDownRight size={14} />
+                              }
+                            </div>
+                            <div>
+                              <div className="text-white font-medium">{transaction.title}</div>
+                              <div className="text-gray-500 text-xs">
+                                {transaction.type === 'income' ? 'Income' : 'Expense'}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center">
-                          <Tag size={14} className="text-gray-400 mr-2" />
-                          <span className="text-gray-300">{transaction.category}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center">
-                          <Calendar size={14} className="text-gray-400 mr-2" />
-                          <span className="text-gray-300">
-                            {new Date(transaction.date).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className={`flex items-center font-semibold ${
-                          transaction.type === 'income' ? 'text-green-500' : 'text-red-500'
-                        }`}>
-                          <span>
-                            {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                          {onEdit && (
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center">
+                            <Tag size={14} className="text-gray-400 mr-2" />
+                            <span className="text-gray-300">{transaction.category}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center">
+                            <Calendar size={14} className="text-gray-400 mr-2" />
+                            <span className="text-gray-300">
+                              {new Date(transaction.date).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className={`flex items-center font-semibold ${
+                            transaction.type === 'income' ? 'text-green-500' : 'text-red-500'
+                          }`}>
+                            <span>
+                              {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                            {onEdit && (
+                              <button
+                                onClick={() => onEdit(transaction)}
+                                className="p-1.5 rounded-full bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition"
+                                title="Edit transaction"
+                              >
+                                <Edit size={14} />
+                              </button>
+                            )}
                             <button
-                              onClick={() => onEdit(transaction)}
-                              className="p-1.5 rounded-full bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition"
-                              title="Edit transaction"
+                              onClick={() => onDelete(transaction._id, transaction.type)}
+                              className="p-1.5 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500/20 transition"
+                              title="Delete transaction"
                             >
-                              <Edit size={14} />
+                              <Trash2 size={14} />
                             </button>
-                          )}
-                          <button
-                            onClick={() => onDelete(transaction._id, transaction.type)}
-                            className="p-1.5 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500/20 transition"
-                            title="Delete transaction"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

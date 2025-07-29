@@ -5,6 +5,8 @@ import { defaultExpenseCategories, defaultIncomeCategories } from '../../data/ca
 interface TransactionFormProps {
   formData: TransactionFormData;
   loading: boolean;
+  isEditing?: boolean;
+  transactionId?: string;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
@@ -13,18 +15,22 @@ interface TransactionFormProps {
 const TransactionForm: React.FC<TransactionFormProps> = ({
   formData,
   loading,
+  isEditing = false,
+  transactionId,
   onInputChange,
   onSubmit,
   onCancel
 }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-      <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl p-6 shadow-2xl w-full max-w-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 backdrop-blur-sm">
+      <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl p-6 shadow-2xl w-full max-w-2xl border border-gray-800/40">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-white">Add New Transaction</h2>
+          <h2 className="text-xl font-bold text-white">
+            {isEditing ? 'Edit Transaction' : 'Add New Transaction'}
+          </h2>
           <button 
             onClick={onCancel}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 hover:text-white transition"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -132,10 +138,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
+              className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg transition shadow-lg hover:shadow-indigo-500/20"
               disabled={loading}
             >
-              {loading ? 'Saving...' : 'Save Transaction'}
+              {loading ? 'Saving...' : isEditing ? 'Update Transaction' : 'Save Transaction'}
             </button>
           </div>
         </form>
