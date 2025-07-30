@@ -1,18 +1,19 @@
 import { Transaction, TransactionFormData } from "../types/transactions";
 
 // Fetch all transactions (both income and expense)
-export async function fetchAllTransactions(): Promise<Transaction[]> {
+export async function fetchAllTransactions(searchQuery : string, currentPage: number): Promise<Transaction[]> {
   const token = localStorage.getItem("expToken");
+  console.log(currentPage);
   try {
     // Fetch both income and expense transactions
     const [expenseRes, incomeRes] = await Promise.all([
-      fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/expense`, {
+      fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/expense/?searchQuery=${searchQuery}&page=${currentPage}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
         credentials: "include",
       }),
-      fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/income`, {
+      fetch(`${process.env.REACT_APP_BACKEND_BASE_URL}/income/?searchQuery=${searchQuery}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },

@@ -26,6 +26,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   onDelete,
   onEdit
 }) => {
+
   // Initialize sort state from localStorage or default to date desc
   const getSavedSortPreference = (): SortPreference => {
     try {

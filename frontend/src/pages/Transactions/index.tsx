@@ -4,13 +4,13 @@ import { fetchAllTransactions, addTransaction, deleteTransaction, updateTransact
 import { Transaction, TransactionFormData } from '../../types/transactions';
 import { defaultExpenseCategories } from '../../data/categories';
 import toast from 'react-hot-toast';
-import { 
-  TransactionForm, 
-  TransactionFilters, 
-  TransactionTable, 
-  TransactionPagination, 
-  ReceiptUploader, 
-  TransactionHistoryUploader 
+import {
+  TransactionForm,
+  TransactionFilters,
+  TransactionTable,
+  TransactionPagination,
+  ReceiptUploader,
+  TransactionHistoryUploader
 } from '../../components/transactions';
 
 const ITEMS_PER_PAGE = 10;
@@ -22,6 +22,7 @@ interface FilterOptions {
   dateTo: string;
   amountMin: string;
   amountMax: string;
+  searchQuery: string;
 }
 
 const TransactionsPage: React.FC = () => {
@@ -36,7 +37,7 @@ const TransactionsPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [currentTransactionId, setCurrentTransactionId] = useState<string>('');
   const [currentTransactionType, setCurrentTransactionType] = useState<'income' | 'expense'>('expense');
-  
+
   // Filters state
   const [filters, setFilters] = useState<FilterOptions>({
     type: 'all',
@@ -44,7 +45,8 @@ const TransactionsPage: React.FC = () => {
     dateFrom: '',
     dateTo: '',
     amountMin: '',
-    amountMax: ''
+    amountMax: '',
+    searchQuery: '',
   });
 
   // Form state
@@ -63,8 +65,10 @@ const TransactionsPage: React.FC = () => {
 
   // Fetch transactions on component mount
   useEffect(() => {
+    console.log("Fetching transactions for page:", currentPage);
+    setLoading(true);
     fetchTransactions();
-  }, []);
+  }, [currentPage]);
 
   // Apply filters when transactions or filters change
   useEffect(() => {
@@ -75,7 +79,7 @@ const TransactionsPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchAllTransactions();
+      const data = await fetchAllTransactions("", currentPage);
       setTransactions(data);
       setFilteredTransactions(data);
     } catch (err: any) {
@@ -86,59 +90,67 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
-  const applyFilters = () => {
+  const applyFilters = async() => {
     let result = [...transactions];
-    
+
     // Filter by type
     if (filters.type !== 'all') {
       result = result.filter(t => t.type === filters.type);
     }
-    
+
     // Filter by category
     if (filters.category) {
       result = result.filter(t => t.category === filters.category);
     }
-    
+
     // Filter by date range
     if (filters.dateFrom) {
       const fromDate = new Date(filters.dateFrom);
       result = result.filter(t => new Date(t.date) >= fromDate);
     }
-    
+
     if (filters.dateTo) {
       const toDate = new Date(filters.dateTo);
       // Set time to end of day
       toDate.setHours(23, 59, 59, 999);
       result = result.filter(t => new Date(t.date) <= toDate);
     }
-    
+
     // Filter by amount range
     if (filters.amountMin) {
       const minAmount = parseFloat(filters.amountMin);
       result = result.filter(t => t.amount >= minAmount);
     }
-    
+
     if (filters.amountMax) {
       const maxAmount = parseFloat(filters.amountMax);
       result = result.filter(t => t.amount <= maxAmount);
     }
-    
+
+    if (filters.searchQuery) {
+      const res = await fetchAllTransactions(filters.searchQuery, currentPage);
+      console.log(res);
+      setFilteredTransactions(res);
+      return;
+    }
+
+
     setFilteredTransactions(result);
     setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: name === 'amount' ? parseFloat(value) : value 
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'amount' ? parseFloat(value) : value
     }));
 
     // Update category options when type changes
     if (name === 'type') {
-      setFormData(prev => ({ 
-        ...prev, 
-        category: value === 'income' ? 'Salary' : 'Food' 
+      setFormData(prev => ({
+        ...prev,
+        category: value === 'income' ? 'Salary' : 'Food'
       }));
     }
   };
@@ -148,13 +160,13 @@ const TransactionsPage: React.FC = () => {
     setLoading(true);
     try {
       let result;
-      
+
       if (isEditing) {
         result = await updateTransaction(currentTransactionId, currentTransactionType, formData);
       } else {
         result = await addTransaction(formData);
       }
-      
+
       if (result.success) {
         toast.success(result.message);
         resetForm();
@@ -195,10 +207,10 @@ const TransactionsPage: React.FC = () => {
     setIsEditing(true);
     setCurrentTransactionId(transaction._id);
     setCurrentTransactionType(transaction.type);
-    
+
     // Format the date to YYYY-MM-DD for the input field
     const formattedDate = new Date(transaction.date).toISOString().split('T')[0];
-    
+
     setFormData({
       title: transaction.title,
       amount: transaction.amount,
@@ -207,7 +219,7 @@ const TransactionsPage: React.FC = () => {
       category: transaction.category,
       description: transaction.description || '',
     });
-    
+
     setShowForm(true);
   };
 
@@ -216,7 +228,7 @@ const TransactionsPage: React.FC = () => {
     setIsEditing(false);
     setCurrentTransactionId('');
     setCurrentTransactionType('expense');
-    
+
     // Reset form data
     setFormData({
       title: '',
@@ -240,7 +252,7 @@ const TransactionsPage: React.FC = () => {
       // Always set as expense for receipts
       type: 'expense',
     }));
-    
+
     // Show the form after receipt processing
     setIsEditing(false);
     setShowReceiptUploader(false);
@@ -324,7 +336,7 @@ const TransactionsPage: React.FC = () => {
 
         {/* Receipt Uploader */}
         {showReceiptUploader && (
-          <ReceiptUploader 
+          <ReceiptUploader
             onExtractedData={handleExtractedReceiptData}
             onClose={() => setShowReceiptUploader(false)}
           />
@@ -339,8 +351,8 @@ const TransactionsPage: React.FC = () => {
         )}
 
         {/* Transaction Filters */}
-        <TransactionFilters 
-          filterType={filters.type} 
+        <TransactionFilters
+          filterType={filters.type}
           onFilterChange={setFilters}
           currentFilters={filters}
         />
@@ -354,17 +366,11 @@ const TransactionsPage: React.FC = () => {
           onEdit={handleEdit}
         />
 
-        {/* Pagination */}
-        {!loading && !error && filteredTransactions.length > 0 && (
-          <TransactionPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={filteredTransactions.length}
-            itemsPerPage={ITEMS_PER_PAGE}
-            onPageChange={setCurrentPage}
-          />
-        )}
       </div>
+        <button onClick={()=>{
+          setCurrentPage(prev => Math.max(1, prev - 1));
+        }}
+         className='bg-white'>Next</button>
 
       {/* Confirmation Modal */}
       {showDeleteModal && (

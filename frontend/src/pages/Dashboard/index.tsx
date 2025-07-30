@@ -40,7 +40,7 @@ const Dashboard: React.FC = () => {
           fetchExpenseCategorySummary(),
           fetchIncomeMonthlySummary(),
           fetchExpenseMonthlySummary(),
-          fetchAllTransactions(),
+          fetchAllTransactions("", 1),
           fetchDailyTransactions(timeframe),
         ]);
         setIncomeByCategory(incomeCat);
